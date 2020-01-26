@@ -9241,20 +9241,26 @@ namespace Rs317.Sharp
 			idleCounter++;
 			if(idleCounter > 50)
 				SendIdlePing();
+
+			await SendPendingPacketBufferAsync();
+		}
+
+		protected virtual async Task SendPendingPacketBufferAsync()
+		{
 			try
 			{
-				if(socket != null && stream.position > 0)
+				if (socket != null && stream.position > 0)
 				{
 					await socket.write(stream.position, stream.buffer);
 					stream.position = 0;
 					idleCounter = 0;
 				}
 			}
-			catch(IOException _ex)
+			catch (IOException _ex)
 			{
 				await dropClient();
 			}
-			catch(Exception exception)
+			catch (Exception exception)
 			{
 				logout();
 			}
