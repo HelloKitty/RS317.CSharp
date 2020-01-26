@@ -5780,7 +5780,7 @@ namespace Rs317.Sharp
 			return worldDrawPlane;
 		}
 
-		private async Task<bool> handleIncomingData()
+		protected async Task<bool> handleIncomingData()
 		{
 			if(socket == null)
 				return false;
@@ -8900,9 +8900,7 @@ namespace Rs317.Sharp
 			if(idleLogout > 0)
 				idleLogout--;
 
-			for(int j = 0; j < 5; j++)
-				if(!await handleIncomingData())
-					break;
+			await HandleIncomingPacketsAsync();
 
 			if(!LoggedIn)
 				return;
@@ -9243,6 +9241,13 @@ namespace Rs317.Sharp
 				SendIdlePing();
 
 			await SendPendingPacketBufferAsync();
+		}
+
+		protected async Task HandleIncomingPacketsAsync()
+		{
+			for (int j = 0; j < 5; j++)
+				if (!await handleIncomingData())
+					break;
 		}
 
 		protected virtual async Task SendPendingPacketBufferAsync()
