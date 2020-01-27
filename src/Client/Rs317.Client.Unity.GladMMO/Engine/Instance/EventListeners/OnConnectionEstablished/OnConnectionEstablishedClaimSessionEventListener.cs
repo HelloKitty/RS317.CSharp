@@ -50,17 +50,14 @@ namespace GladMMO
 			{
 				try
 				{
-					CharacterListResponse listResponse = await CharacterService.GetCharacters()
-						.ConfigureAwait(false);
+					CharacterListResponse listResponse = await CharacterService.GetCharacters();
 
-					await CharacterService.TryEnterSession(listResponse.CharacterIds.First())
-						.ConfigureAwait(false);
+					await CharacterService.TryEnterSession(listResponse.CharacterIds.First());
 
 					CharacterDataRepository.UpdateCharacterId(listResponse.CharacterIds.First());
 
 					//TODO: When it comes to community servers, we should not expose the sensitive JWT to them. We need a better way to deal with auth against untrusted instance servers
-					await SendService.SendMessage(new ClientSessionClaimRequestPayload(AuthTokenRepository.RetrieveWithType(), listResponse.CharacterIds.First()))
-						.ConfigureAwait(false);
+					await SendService.SendMessage(new ClientSessionClaimRequestPayload(AuthTokenRepository.RetrieveWithType(), listResponse.CharacterIds.First()));
 				}
 				catch(Exception e)
 				{

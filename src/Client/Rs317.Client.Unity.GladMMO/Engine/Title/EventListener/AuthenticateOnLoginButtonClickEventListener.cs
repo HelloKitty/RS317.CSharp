@@ -67,8 +67,7 @@ namespace Rs317.GladMMO
 				//We can't do error code supression with refit anymore, so we have to do this crap.
 				try
 				{
-					jwtModel = await AuthService.TryAuthenticate(new AuthenticationRequestModel(UserNameField.Text, PasswordField.Text))
-						.ConfigureAwait(false);
+					jwtModel = await AuthService.TryAuthenticate(new AuthenticationRequestModel(UserNameField.Text, PasswordField.Text));
 				}
 				catch(ApiException e)
 				{

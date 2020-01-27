@@ -34,8 +34,7 @@ namespace Rs317.GladMMO
 			{
 				try
 				{
-					ResponseModel<NameQueryResponse, NameQueryResponseCode> responseModel = await NameQueryService.RetrievePlayerNameAsync(args.EntityGuid.RawGuidValue)
-						.ConfigureAwait(false);
+					ResponseModel<NameQueryResponse, NameQueryResponseCode> responseModel = await NameQueryService.RetrievePlayerNameAsync(args.EntityGuid.RawGuidValue);
 
 					if(responseModel.isSuccessful)
 						args.WorldReprensetation.SetName(responseModel.Result.EntityName);
