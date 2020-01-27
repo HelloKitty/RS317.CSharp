@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autofac;
 using Glader.Essentials;
+using GladMMO;
 using Rs317.GladMMMO;
 using Rs317.GladMMO;
 
@@ -47,10 +48,17 @@ namespace Rs317.Sharp
 				//Used for Task.Delay in WebGL (Task.Delay doesn't work in WebGL directly)
 				WebGLUnityTaskDelayFactory delayFactory = new UnityEngine.GameObject("Task Delayer").AddComponent<WebGLUnityTaskDelayFactory>();
 
+				AuthenticationDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
+				ServiceDiscoveryDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
+
 				if(RsUnityPlatform.isInEditor)
+				{
 					GladMMOProgram.RootClient = new GladMMORsUnityWebGLClient(configuration, GraphicsObject, this, new DefaultWebSocketClientFactory(), delayFactory, GladMMOProgram.RootGameManager);
+				}
 				else
+				{
 					GladMMOProgram.RootClient = new GladMMORsUnityWebGLClient(configuration, GraphicsObject, this, new WebGLWebSocketFactory(delayFactory), delayFactory, GladMMOProgram.RootGameManager);
+				}
 			}
 			else
 			{
