@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Common.Logging;
 using Glader.Essentials;
 using GladNet;
+using Rs317.GladMMO;
 
 namespace GladMMO
 {
@@ -22,12 +23,15 @@ namespace GladMMO
 
 		private ILog Logger { get; }
 
+		private IGameContextEventQueueable EventQueueable { get; }
+
 		public OnConnectionEstablishedClaimSessionEventListener(INetworkConnectionEstablishedEventSubscribable subscriptionService,
 			[NotNull] IPeerPayloadSendService<GameClientPacketPayload> sendService,
 			[NotNull] IReadonlyAuthTokenRepository authTokenRepository,
 			[NotNull] ILocalCharacterDataRepository characterDataRepository,
 			[NotNull] ICharacterService characterService,
-			[JetBrains.Annotations.NotNull] ILog logger) 
+			[JetBrains.Annotations.NotNull] ILog logger,
+			[JetBrains.Annotations.NotNull] IGameContextEventQueueable eventQueueable) 
 			: base(subscriptionService)
 		{
 			SendService = sendService ?? throw new ArgumentNullException(nameof(sendService));
@@ -35,13 +39,14 @@ namespace GladMMO
 			CharacterDataRepository = characterDataRepository ?? throw new ArgumentNullException(nameof(characterDataRepository));
 			CharacterService = characterService ?? throw new ArgumentNullException(nameof(characterService));
 			Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			EventQueueable = eventQueueable ?? throw new ArgumentNullException(nameof(eventQueueable));
 		}
 
 		protected override void OnEventFired(object source, EventArgs args)
 		{
 			//Once connection to the instance server is established
 			//we must attempt to claim out session on to actually fully enter.
-			Task.Factory.StartNew(async () =>
+			EventQueueable.Enqueue(async () =>
 			{
 				try
 				{
@@ -57,7 +62,7 @@ namespace GladMMO
 					await SendService.SendMessage(new ClientSessionClaimRequestPayload(AuthTokenRepository.RetrieveWithType(), listResponse.CharacterIds.First()))
 						.ConfigureAwait(false);
 				}
-				catch (Exception e)
+				catch(Exception e)
 				{
 					if(Logger.IsErrorEnabled)
 						Logger.Error($"Failed to authenticate to instance server as character. Reason: {e.ToString()}");

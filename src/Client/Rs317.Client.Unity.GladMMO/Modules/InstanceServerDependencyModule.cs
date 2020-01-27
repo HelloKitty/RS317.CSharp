@@ -35,8 +35,12 @@ namespace Rs317.GladMMO
 
 			builder.RegisterInstance<RsUnityClient>(GladMMOProgram.RootClient)
 				.As<RsUnityClient>()
+				.OnActivated(args => HackyInstanceSharedClientData.Instance = args.Context.Resolve<HackyInstanceSharedClientData>())
 				.AsImplementedInterfaces()
 				.ExternallyOwned();
+
+			builder.RegisterType<HackyInstanceSharedClientData>()
+				.AsSelf();
 
 			//Register all required Authentication/Title modules.
 			builder.RegisterModule(new CommonGameDependencyModule(GameSceneType.InstanceServerScene, "http://192.168.0.12:5000", typeof(GladMMOUnityClient).Assembly));

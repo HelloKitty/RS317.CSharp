@@ -89,6 +89,11 @@ namespace Rs317.GladMMMO
 			EventQueue.Enqueue(actionEvent);
 		}
 
+		public void EnqueueAsync(Func<Task> actionEventAsync)
+		{
+			EventQueueAsync.Enqueue(actionEventAsync);
+		}
+
 		public async Task Service()
 		{
 			//Just do one a tick.

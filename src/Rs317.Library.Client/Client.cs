@@ -400,7 +400,7 @@ namespace Rs317.Sharp
 		private BaseRsImageProducer<TGraphicsType> gameScreenImageProducer;
 		private BaseRsImageProducer<TGraphicsType> chatboxImageProducer;
 		private int daysSinceRecoveryChange;
-		protected IRsSocket socket { get; private set; }
+		public IRsSocket socket { get; private set; }
 		private int privateMessagePointer;
 		private int minimapZoom;
 		private int randomisationMinimapZoom;
@@ -9243,7 +9243,7 @@ namespace Rs317.Sharp
 			await SendPendingPacketBufferAsync();
 		}
 
-		protected async Task HandleIncomingPacketsAsync()
+		protected virtual async Task HandleIncomingPacketsAsync()
 		{
 			for (int j = 0; j < 5; j++)
 				if (!await handleIncomingData())
