@@ -23,7 +23,13 @@ namespace Rs317.GladMMO
 		public async Task OnGameInitialized()
 		{
 			var anyZoneConnectionEndpointAsync = await ZoneDataServiceClient.GetAnyZoneConnectionEndpointAsync();
-			ZoneDataRepository.UpdateZoneId(anyZoneConnectionEndpointAsync.Result.ZoneId);
+
+			if(anyZoneConnectionEndpointAsync.isSuccessful)
+				ZoneDataRepository.UpdateZoneId(anyZoneConnectionEndpointAsync.Result.ZoneId);
+			else
+				Console.WriteLine($"Failed to query Zone Endpoint. Error: {anyZoneConnectionEndpointAsync.ResultCode}");
+
+			Console.WriteLine($"ZoneInit Finished");
 		}
 	}
 }
