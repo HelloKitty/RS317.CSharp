@@ -21,9 +21,6 @@ namespace Rs317.GladMMO
 
 		public event EventHandler OnRunescapeLoginButtonPressed;
 
-		//Injected at connection time.
-		public static IPeerPayloadSendService<GameClientPacketPayload> SendService { get; set; }
-
 		public GladMMOUnityClient(ClientConfiguration config, UnityRsGraphics graphicsObject, GameManager gameManagerService) 
 			: base(config, graphicsObject, new DefaultRunnableStarterStrategy(), new DefaultRsSocketFactory(new DefaultRunnableStarterStrategy()))
 		{
@@ -77,7 +74,7 @@ namespace Rs317.GladMMO
 				pathPoints[pathIndex] = new Vector3(walkingQueueX[currentIndex] + baseX, 0, walkingQueueY[currentIndex] + baseY);
 			}
 
-			SendService.SendMessage(new ClientSetClickToMovePathRequestPayload(new PathBasedMovementData(pathPoints.ToArray(), 100)));
+			HackyInstanceSharedClientData.Instance.SendService.SendMessage(new ClientSetClickToMovePathRequestPayload(new PathBasedMovementData(pathPoints.ToArray(), 100)));
 		}
 	}
 }
