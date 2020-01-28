@@ -43,6 +43,13 @@ namespace Rs317.Sharp
 			SixLabors.ImageSharp.Advanced.AotCompilerTools.Seed<Rgba32>();
 		}
 
+		void Awake()
+		{
+			//Using our custom sync context.
+			CustomUnitySynchronizationContext.InitializeSynchronizationContext();
+			gameObject.AddComponent<UnitySyncContextTickable>();
+		}
+
 		//Called on scene start, which starts the underlying client.
 		protected virtual async Task Start()
 		{

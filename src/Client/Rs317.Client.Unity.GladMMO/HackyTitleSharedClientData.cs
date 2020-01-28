@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using GladMMO;
 using GladNet;
 using Rs317.GladMMO;
@@ -24,15 +26,41 @@ namespace Rs317.Sharp
 		}
 	}
 
-	public class HackyInstanceSharedClientData
+	public class HackyInstanceSharedClientData : IPeerRequestSendService<GameClientPacketPayload>
 	{
 		public INetworkSerializationService SerializerService { get; }
 
 		public static HackyInstanceSharedClientData Instance { get; set; }
 
-		public HackyInstanceSharedClientData([NotNull] INetworkSerializationService serializerService)
+		public MessageHandlerService<GameServerPacketPayload, GameClientPacketPayload> MessageHandler { get; }
+
+		public IPeerMessageContextFactory MessageContextFactory { get; }
+
+		private IConnectionService ConnectionService { get; }
+
+		public IPeerPayloadSendService<GameClientPacketPayload> SendService { get; }
+
+		public HackyInstanceSharedClientData([NotNull] INetworkSerializationService serializerService, 
+			[JetBrains.Annotations.NotNull] MessageHandlerService<GameServerPacketPayload, GameClientPacketPayload> messageHandler,
+			[JetBrains.Annotations.NotNull] IPeerMessageContextFactory messageContextFactory,
+			[JetBrains.Annotations.NotNull] IConnectionService connectionService,
+			[JetBrains.Annotations.NotNull] IPeerPayloadSendService<GameClientPacketPayload> sendService)
 		{
 			SerializerService = serializerService ?? throw new ArgumentNullException(nameof(serializerService));
+			MessageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
+			MessageContextFactory = messageContextFactory ?? throw new ArgumentNullException(nameof(messageContextFactory));
+			ConnectionService = connectionService ?? throw new ArgumentNullException(nameof(connectionService));
+			SendService = sendService ?? throw new ArgumentNullException(nameof(sendService));
+		}
+
+		public IPeerMessageContext<GameClientPacketPayload> CreateMessageContext()
+		{
+			return MessageContextFactory.Create(ConnectionService, SendService, this);
+		}
+
+		async Task<TResponseType> IPeerRequestSendService<GameClientPacketPayload>.SendRequestAsync<TResponseType>(GameClientPacketPayload request, DeliveryMethod method = DeliveryMethod.ReliableOrdered, CancellationToken cancellationToken = new CancellationToken())
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

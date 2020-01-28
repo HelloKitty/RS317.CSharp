@@ -22,7 +22,6 @@ namespace Rs317.Sharp
 				if(request.Method != HttpMethod.Get)
 				{
 					unityRequest.uploadHandler = new UploadHandlerRaw(await request.Content.ReadAsByteArrayAsync());
-					unityRequest.downloadHandler = new DownloadHandlerBuffer();
 				}
 			}
 			catch (Exception e)
@@ -31,16 +30,21 @@ namespace Rs317.Sharp
 				throw;
 			}
 
-			try
-			{
-				unityRequest.SetRequestHeader("Content-Type", request.Content.Headers.ContentType.MediaType);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine($"Failed to grab Content-Type header of {nameof(HttpRequestMessage)} to copy to {nameof(UnityWebRequest)}. Reason: {e}");
-				throw;
-			}
+			//Even if it's GET we should add this handler.
+			unityRequest.downloadHandler = new DownloadHandlerBuffer();
 
+			if (request.Method != HttpMethod.Get)
+			{
+				try
+				{
+					unityRequest.SetRequestHeader("Content-Type", request.Content.Headers.ContentType.MediaType);
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine($"Failed to grab Content-Type header of {nameof(HttpRequestMessage)} to copy to {nameof(UnityWebRequest)}. Reason: {e}");
+					throw;
+				}
+			}
 
 			try
 			{

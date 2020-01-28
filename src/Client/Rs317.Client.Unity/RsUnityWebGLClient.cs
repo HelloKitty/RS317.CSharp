@@ -65,7 +65,7 @@ namespace Rs317.Sharp
 			}
 
 			//WebGL probably forces vsync already but we should ensure it.
-			QualitySettings.vSyncCount = 1;
+			//QualitySettings.vSyncCount = 1;
 		}
 
 		[MonoPInvokeCallback(typeof(OnVisibilityChangeCallback))]
@@ -693,6 +693,8 @@ namespace Rs317.Sharp
 			await HandlePendingInterfaceUnpackingAsync();
 
 			await PostLoadEngineInitializationAsync();
+
+			drawLoadingText(100, "Finished Loading");
 
 			int opos = 0;
 			int ratio = 256;

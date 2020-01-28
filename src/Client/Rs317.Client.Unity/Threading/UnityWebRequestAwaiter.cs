@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -14,32 +15,29 @@ namespace Rs317.Sharp
 
 		public bool IsCompleted => WebOperation.isDone;
 
-		private Action AwaiterContinuation;
-
 		public UnityWebRequestAwaiter([NotNull] UnityWebRequestAsyncOperation webOperation)
 		{
 			WebOperation = webOperation ?? throw new ArgumentNullException(nameof(webOperation));
-			WebOperation.completed += WebOperationOnCompleted;
-		}
-
-		private void WebOperationOnCompleted(AsyncOperation obj)
-		{
-			WebOperation.completed -= WebOperationOnCompleted;
-
-			//It completed immediately, meaning that the continuation is
-			//not set if this happens to be null.
-			AwaiterContinuation?.Invoke();
-			AwaiterContinuation = null;
 		}
 
 		public void GetResult() { }
 
 		public void OnCompleted([NotNull] Action continuation)
 		{
-			if (WebOperation.isDone)
-				continuation.Invoke();
-			else
-				AwaiterContinuation = continuation;
+			if(IsCompleted)
+			{
+				continuation();
+				return;
+			}
+
+			SynchronizationContext capturedContext = SynchronizationContext.Current;
+			WebOperation.completed += operation =>
+			{
+				if(capturedContext != null)
+					capturedContext.Post(_ => continuation(), null);
+				else
+					continuation();
+			};
 		}
 	}
 

@@ -23,6 +23,9 @@ namespace Rs317.GladMMO
 			builder.RegisterModule(new CommonGameDependencyModule(GameSceneType.TitleScreen, "http://192.168.0.12:5000", typeof(GladMMOUnityClient).Assembly));
 			builder.RegisterModule<TitleScreenUIDependenciesModule>();
 
+			builder.RegisterType<WebGLZoneDataServiceClient>()
+				.As<IZoneDataService>();
+
 			builder.RegisterInstance(new ClientConfiguration(0, 0, true))
 				.AsSelf();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GladMMO;
@@ -88,6 +89,8 @@ namespace Rs317.Sharp
 
 				var incomingMessage = new NetworkIncomingMessage<GameServerPacketPayload>(new HeaderlessPacketHeader(payloadSize), payload);
 
+				await HackyInstanceSharedClientData.Instance.MessageHandler.TryHandleMessage(HackyInstanceSharedClientData.Instance.CreateMessageContext(), incomingMessage);
+
 				Console.WriteLine($"GladMMO Packet: {payload.GetType().Name}");
 			}
 		}
@@ -100,6 +103,23 @@ namespace Rs317.Sharp
 		protected override void SendIdlePing()
 		{
 			//Just stub it out.
+		}
+
+		protected override void SendWalkPacket(int clickType, int maxPathSize, int x, int currentIndex, int y)
+		{
+			//TODO: Don't use unit vectors.
+			Vector3[] pathPoints = new Vector3[currentIndex + 1];
+
+			pathPoints[0] = new Vector3(walkingQueueX[currentIndex] + baseX, 0, walkingQueueY[currentIndex] + baseY);
+
+			int pathIndex = 1;
+			for(int counter = 1; counter < maxPathSize; counter++, pathIndex++)
+			{
+				currentIndex--;
+				pathPoints[pathIndex] = new Vector3(walkingQueueX[currentIndex] + baseX, 0, walkingQueueY[currentIndex] + baseY);
+			}
+
+			HackyInstanceSharedClientData.Instance.SendService.SendMessage(new ClientSetClickToMovePathRequestPayload(new PathBasedMovementData(pathPoints, 100)));
 		}
 	}
 }

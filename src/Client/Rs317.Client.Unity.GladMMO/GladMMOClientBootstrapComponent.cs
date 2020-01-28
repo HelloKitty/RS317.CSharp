@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Autofac;
@@ -25,6 +26,24 @@ namespace Rs317.Sharp
 	{
 		protected override async Task Start()
 		{
+			//WebGL doesn't support ConfigureAwait: https://issuetracker.unity3d.com/issues/webgl-task-awaited-with-task-dot-configureawait-false-does-not-continue-in-a-webgl-build
+			if (RsUnityPlatform.isWebGLBuild)
+			{
+				//Important to set these before the IoC containers are created. SO ASAP
+				//otherwise they'll use the wrong stuff.
+				AuthenticationDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
+				ServiceDiscoveryDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
+				ZoneServerServiceDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
+
+				//{ "endpoint":{ "endpointAddress":"http://72.190.177.214","endpointPort":5012},"resultCode":1}
+				ZoneServerServiceDependencyAutofacModule.PrecomputedEndpoint = @"http://72.190.177.214:5012/";
+
+				//{"endpoint":{"endpointAddress":"http://test-guardians-auth.azurewebsites.net","endpointPort":80},"resultCode":1}
+				AuthenticationDependencyAutofacModule.PrecomputedEndpoint = @"http://test-guardians-auth.azurewebsites.net:80/";
+
+				GladMMOAsyncSettings.ConfigureAwaitFalseSupported = false;
+			}
+
 			//Wait for base engine start
 			await base.Start();
 
@@ -47,9 +66,6 @@ namespace Rs317.Sharp
 			{
 				//Used for Task.Delay in WebGL (Task.Delay doesn't work in WebGL directly)
 				WebGLUnityTaskDelayFactory delayFactory = new UnityEngine.GameObject("Task Delayer").AddComponent<WebGLUnityTaskDelayFactory>();
-
-				AuthenticationDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
-				ServiceDiscoveryDependencyAutofacModule.HttpClientHandlerFactory = () => new WebGLHttpClientHandler();
 
 				if(RsUnityPlatform.isInEditor)
 				{
