@@ -45,6 +45,9 @@ namespace Rs317.GladMMO
 			//Register all required Authentication/Title modules.
 			builder.RegisterModule(new CommonGameDependencyModule(GameSceneType.InstanceServerScene, "http://192.168.0.12:5000", typeof(GladMMOUnityClient).Assembly));
 
+			builder.RegisterType<WebGLZoneDataServiceClient>()
+				.As<IZoneDataService>();
+
 			builder.RegisterInstance(new ConsoleLogger(LogLevel.All))
 				.AsImplementedInterfaces()
 				.SingleInstance();
