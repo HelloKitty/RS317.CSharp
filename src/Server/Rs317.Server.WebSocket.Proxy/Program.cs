@@ -71,6 +71,7 @@ namespace Rs317.Sharp
 		private static void OnConnectionClose(ConcurrentDictionary<Guid, TcpClient> TcpClientDictionary, IWebSocketConnection socket)
 		{
 			Console.WriteLine("Close!");
+			TcpClientDictionary[socket.ConnectionInfo.Id].GetStream().Close();
 			TcpClientDictionary[socket.ConnectionInfo.Id].Close();
 			TcpClientDictionary.TryRemove(socket.ConnectionInfo.Id, out var val);
 		}
