@@ -5,9 +5,15 @@ using Reinterpret.Net;
 
 namespace Rs317.Sharp
 {
-
 	public sealed class Default317Buffer : IBufferReadable, IBufferWriteable, IBuffer
 	{
+		//Luna-rs default RSA inputs.
+		//public static BigInteger? publicKey = BigInteger.Parse("65537");
+		//public static BigInteger? modulus = BigInteger.Parse("94306533927366675756465748344550949689550982334568289470527341681445613288505954291473168510012417401156971344988779343797488043615702971738296505168869556915772193568338164756326915583511871429998053169912492097791139829802309908513249248934714848531624001166946082342750924060600795950241816621880914628143);94306533927366675756465748344550949689550982334568289470527341681445613288505954291473168510012417401156971344988779343797488043615702971738296505168869556915772193568338164756326915583511871429998053169912492097791139829802309908513249248934714848531624001166946082342750924060600795950241816621880914628143"));
+
+		public static BigInteger? publicKey = null;
+		public static BigInteger? modulus = null;
+
 		public byte[] buffer { get; }
 
 		public int position { get; set; }
@@ -44,8 +50,13 @@ namespace Rs317.Sharp
 			byte[] buf = new byte[tmpPos];
 			readBytes(tmpPos, 0, buf);
 			BigInteger val1 = new BigInteger(buf);
-			BigInteger val2 = val1 /* .modPow(val1, val2) */;
-			byte[] finalBuf = val2.ToByteArray();
+
+			//MoparIsTheBest hackily only does RSA if input is defined
+			//So we will do that too, for devs who want to enable RSA
+			if (publicKey != null && modulus != null)
+				val1 = BigInteger.ModPow(val1, publicKey.Value, modulus.Value);
+
+			byte[] finalBuf = val1.ToByteArray();
 			position = 0;
 			put(finalBuf.Length);
 			putBytes(finalBuf, finalBuf.Length, 0);
