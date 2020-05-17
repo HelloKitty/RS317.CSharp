@@ -31,7 +31,7 @@ namespace Rs317.Sharp
 			ClientConfiguration configuration = new ClientConfiguration(localWorldId, (short) (portOffset + 1), membersWorld);
 
 			RsWinForm windowsFormApplication = new RsWinForm(765, 503);
-			RsWinFormsClient client1 = new RsWinFormsClient(configuration, windowsFormApplication.CreateGraphics(), new DefaultWebSocketClientFactory());
+			RsWinFormsClient client1 = new RsWinFormsClient(configuration, windowsFormApplication.CreateGraphics());
 			windowsFormApplication.RegisterInputSubscriber(client1);
 			client1.createClientFrame(765, 503);
 
