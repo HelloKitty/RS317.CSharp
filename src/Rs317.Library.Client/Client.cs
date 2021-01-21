@@ -3499,6 +3499,15 @@ namespace Rs317.Sharp
 		private bool doWalkTo(int clickType, int objectRotation, int objectSizeY, int objectType, int startY,
 			int objectSizeX, int targetSurroundings, int endY, int startX, bool flag, int endX)
 		{
+			// HelloKitty: This fixes a non-standard bug not in 317 mopar deob.
+			// The issue is that SOMETIMES during loading a region a player is able to generate a path
+			// through collision. Cannot determine when this regression occurred.
+			if (loadingStage != RegionLoadingStage.LoadingComplete)
+			{
+				Console.WriteLine($"DEBUG: Tried to walk while loading region.");
+				return false;
+			}
+
 			byte mapSizeX = 104;
 			byte mapSizeY = 104;
 			for(int x = 0; x < mapSizeX; x++)
