@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 
 namespace Rs317.Sharp
 {
+#if !IL2CPP
 	/// <summary>
 	/// WebSocket class bound to JSLIB.
 	/// </summary>
@@ -277,4 +278,5 @@ namespace Rs317.Sharp
 			this.OnClose?.Invoke(WebSocketHelpers.ParseCloseCodeEnum(closeCode));
 		}
 	}
+#endif
 }

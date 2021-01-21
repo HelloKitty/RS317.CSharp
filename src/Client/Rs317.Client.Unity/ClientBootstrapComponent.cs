@@ -107,17 +107,21 @@ namespace Rs317.Sharp
 
 		protected virtual RsUnityClient CreateRsClient(ClientConfiguration configuration)
 		{
-			if (RsUnityPlatform.isWebGLBuild)
+#if !IL2CPP
+			if(RsUnityPlatform.isWebGLBuild)
 			{
 				//Used for Task.Delay in WebGL (Task.Delay doesn't work in WebGL directly)
 				WebGLUnityTaskDelayFactory delayFactory = new UnityEngine.GameObject("Task Delayer").AddComponent<WebGLUnityTaskDelayFactory>();
 
-				if (RsUnityPlatform.isInEditor)
+
+				if(RsUnityPlatform.isInEditor)
 					return new RsUnityWebGLClient(configuration, GraphicsObject, this, new DefaultWebSocketClientFactory(), delayFactory);
 				else
 					return new RsUnityWebGLClient(configuration, GraphicsObject, this, new WebGLWebSocketFactory(delayFactory), delayFactory);
 			}
-			else if(RsUnityPlatform.isPlaystationBuild)
+			else
+#endif
+			if(RsUnityPlatform.isPlaystationBuild)
 				return new RsUnityPS4Client(configuration, GraphicsObject);
 			else if(RsUnityPlatform.isAndroidMobileBuild)
 				return new RsUnityAndroidClient(configuration, GraphicsObject);

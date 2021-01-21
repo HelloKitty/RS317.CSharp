@@ -14,6 +14,7 @@ using Color = UnityEngine.Color;
 
 namespace Rs317.Sharp
 {
+#if !IL2CPP
 	public class RsUnityWebGLClient : RsUnityClient
 	{
 		/// <summary>
@@ -792,4 +793,5 @@ namespace Rs317.Sharp
 				exit();
 		}
 	}
+#endif
 }

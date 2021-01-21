@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 
 namespace Rs317.Sharp
 {
+#if !IL2CPP
 	/// <summary>
 	/// Class providing static access methods to work with JSLIB WebSocket or WebSocketSharp interface
 	/// </summary>
@@ -160,4 +161,5 @@ namespace Rs317.Sharp
 			//bytes but this will be always zero with explicit calls to receieve.
 		}
 	}
+#endif
 }
