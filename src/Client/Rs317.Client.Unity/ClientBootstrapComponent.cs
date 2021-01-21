@@ -96,7 +96,7 @@ namespace Rs317.Sharp
 			RsUnityClient client1 = CreateRsClient(configuration);
 			InputObject.InputSubscribable = client1;
 			GraphicsObject.GameStateHookable = client1;
-			client1.createClientFrame((int) (765 * ResolutionMultiplier), (int) (503 * ResolutionMultiplier));
+			client1.createClientFrame((int) (765), (int) (503));
 
 			Debug.Log($"Client frame created.");
 		}
