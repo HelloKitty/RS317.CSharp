@@ -5,6 +5,8 @@ namespace Rs317.Sharp
 {
 	public sealed class Model : Animable
 	{
+		private const int MODEL_DRAW_DISTANCE = WorldController.TILE_DRAW_DISTANCE * 140;
+
 		public static Model getModel(int model)
 		{
 			if(modelHeaders == null)
@@ -1725,7 +1727,7 @@ namespace Rs317.Sharp
 				int k2 = y * yCameraSine + j2 * yCameraCosine >> 16;
 				int l2 = diagonal2DAboveOrigin * yCameraCosine >> 16;
 				int i3 = k2 + l2;
-				if(i3 <= 50 || k2 >= 3500)
+				if(i3 <= 50 || k2 >= MODEL_DRAW_DISTANCE)
 					return;
 				int j3 = z * xCameraSine + x * xCameraCosine >> 16;
 				int k3 = j3 - diagonal2DAboveOrigin << 9;

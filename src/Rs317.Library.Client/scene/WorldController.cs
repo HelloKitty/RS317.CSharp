@@ -5,6 +5,17 @@ namespace Rs317.Sharp
 
 	public sealed class WorldController
 	{
+		/// <summary>
+		/// The default tile draw distance value from RS2.
+		/// </summary>
+		public const int DEFAULT_TILE_DRAW_DISTANCE = 25;
+
+		//See: https://www.rune-server.ee/runescape-development/rs2-client/snippets/682352-extending-draw-distance.html
+		/// <summary>
+		/// Draw distance constant.
+		/// </summary>
+		public const int TILE_DRAW_DISTANCE = DEFAULT_TILE_DRAW_DISTANCE * 2;
+
 		public static void createCullingCluster(int z, int highestX, int lowestX, int highestY, int lowestY, int highestZ,
 			int lowestZ, int searchMask)
 		{
@@ -54,7 +65,7 @@ namespace Rs317.Sharp
 			bottom = viewportHeight;
 			midX = viewportWidth / 2;
 			midY = viewportHeight / 2;
-			bool[][][][] tileOnScreen = CollectionUtilities.Create4DJaggedArray<bool>(9, 32, 53, 53);
+			bool[][][][] tileOnScreen = CollectionUtilities.Create4DJaggedArray<bool>(9, 32, (TILE_DRAW_DISTANCE * 2) + 3, (TILE_DRAW_DISTANCE * 2) + 3);
 			for(int angleY = 128; angleY <= 384; angleY += 32)
 			{
 				for(int angleX = 0; angleX < 2048; angleX += 64)
@@ -80,7 +91,7 @@ namespace Rs317.Sharp
 								break;
 							}
 
-							tileOnScreen[anglePointerY][anglePointerX][x + 25 + 1][y + 25 + 1] = visible;
+							tileOnScreen[anglePointerY][anglePointerX][x + TILE_DRAW_DISTANCE + 1][y + TILE_DRAW_DISTANCE + 1] = visible;
 						}
 
 					}
@@ -93,9 +104,9 @@ namespace Rs317.Sharp
 			{
 				for(int anglePointerX = 0; anglePointerX < 32; anglePointerX++)
 				{
-					for(int relativeX = -25; relativeX < 25; relativeX++)
+					for(int relativeX = -TILE_DRAW_DISTANCE; relativeX < TILE_DRAW_DISTANCE; relativeX++)
 					{
-						for(int relativeZ = -25; relativeZ < 25; relativeZ++)
+						for(int relativeZ = -TILE_DRAW_DISTANCE; relativeZ < TILE_DRAW_DISTANCE; relativeZ++)
 						{
 							bool visible = false;
 
@@ -103,21 +114,17 @@ namespace Rs317.Sharp
 							{
 								for(int g = -1; g <= 1; g++)
 								{
-									if(tileOnScreen[anglePointerY][anglePointerX][relativeX + f + 25 + 1][relativeZ + g
-																													 + 25 + 1])
+									if(tileOnScreen[anglePointerY][anglePointerX][relativeX + f + TILE_DRAW_DISTANCE + 1][relativeZ + g + TILE_DRAW_DISTANCE + 1])
 										visible = true;
-									else if(tileOnScreen[anglePointerY][(anglePointerX + 1) % 31][relativeX + f + 25
-																								   + 1][relativeZ + g + 25 + 1])
+									else if(tileOnScreen[anglePointerY][(anglePointerX + 1) % 31][relativeX + f + TILE_DRAW_DISTANCE + 1][relativeZ + g + TILE_DRAW_DISTANCE + 1])
 										visible = true;
-									else if(tileOnScreen[anglePointerY + 1][anglePointerX][relativeX + f + 25
-																							+ 1][relativeZ + g + 25 + 1])
+									else if(tileOnScreen[anglePointerY + 1][anglePointerX][relativeX + f + TILE_DRAW_DISTANCE + 1][relativeZ + g + TILE_DRAW_DISTANCE + 1])
 									{
 										visible = true;
 									}
 									else
 									{
-										if(!tileOnScreen[anglePointerY + 1][(anglePointerX + 1) % 31][relativeX + f + 25
-																									   + 1][relativeZ + g + 25 + 1])
+										if(!tileOnScreen[anglePointerY + 1][(anglePointerX + 1) % 31][relativeX + f + TILE_DRAW_DISTANCE + 1][relativeZ + g + TILE_DRAW_DISTANCE + 1])
 											continue;
 										visible = true;
 									}
@@ -128,7 +135,7 @@ namespace Rs317.Sharp
 							}
 
 							label0:
-							TILE_VISIBILITY_MAPS[anglePointerY][anglePointerX][relativeX + 25][relativeZ + 25] = visible;
+							TILE_VISIBILITY_MAPS[anglePointerY][anglePointerX][relativeX + TILE_DRAW_DISTANCE][relativeZ + TILE_DRAW_DISTANCE] = visible;
 						}
 
 					}
@@ -256,7 +263,7 @@ namespace Rs317.Sharp
 
 		private int[][] tileShapeIndices;
 
-		private static bool[][][][] TILE_VISIBILITY_MAPS = CollectionUtilities.Create4DJaggedArray<bool>(8, 32, 51, 51);
+		private static bool[][][][] TILE_VISIBILITY_MAPS = CollectionUtilities.Create4DJaggedArray<bool>(8, 32, (TILE_DRAW_DISTANCE * 2 + 1), (TILE_DRAW_DISTANCE * 2 + 1));
 		private static bool[][] TILE_VISIBILITY_MAP;
 		private static int midX;
 		private static int midY;
@@ -1280,13 +1287,13 @@ namespace Rs317.Sharp
 				CullingCluster cluster = clusters[c];
 				if(cluster.searchMask == 1)
 				{
-					int distanceFromCameraStartX = (cluster.tileStartX - cameraPositionTileX) + 25;
+					int distanceFromCameraStartX = (cluster.tileStartX - cameraPositionTileX) + TILE_DRAW_DISTANCE;
 					if(distanceFromCameraStartX < 0 || distanceFromCameraStartX > 50)
 						continue;
-					int distanceFromCameraStartY = (cluster.tileStartY - cameraPositionTileY) + 25;
+					int distanceFromCameraStartY = (cluster.tileStartY - cameraPositionTileY) + TILE_DRAW_DISTANCE;
 					if(distanceFromCameraStartY < 0)
 						distanceFromCameraStartY = 0;
-					int distanceFromCameraEndY = (cluster.tileEndY - cameraPositionTileY) + 25;
+					int distanceFromCameraEndY = (cluster.tileEndY - cameraPositionTileY) + TILE_DRAW_DISTANCE;
 					if(distanceFromCameraEndY > 50)
 						distanceFromCameraEndY = 50;
 					bool visible = false;
@@ -1326,13 +1333,13 @@ namespace Rs317.Sharp
 
 				if(cluster.searchMask == 2)
 				{
-					int distanceFromCameraStartY = (cluster.tileStartY - cameraPositionTileY) + 25;
+					int distanceFromCameraStartY = (cluster.tileStartY - cameraPositionTileY) + TILE_DRAW_DISTANCE;
 					if(distanceFromCameraStartY < 0 || distanceFromCameraStartY > 50)
 						continue;
-					int distanceFromCameraStartX = (cluster.tileStartX - cameraPositionTileX) + 25;
+					int distanceFromCameraStartX = (cluster.tileStartX - cameraPositionTileX) + TILE_DRAW_DISTANCE;
 					if(distanceFromCameraStartX < 0)
 						distanceFromCameraStartX = 0;
-					int distanceFromCameraEndX = (cluster.tileEndX - cameraPositionTileX) + 25;
+					int distanceFromCameraEndX = (cluster.tileEndX - cameraPositionTileX) + TILE_DRAW_DISTANCE;
 					if(distanceFromCameraEndX > 50)
 						distanceFromCameraEndX = 50;
 					bool visible = false;
@@ -1373,18 +1380,18 @@ namespace Rs317.Sharp
 					int realDistanceFromCameraStartZ = cluster.worldEndZ - cameraPosZ;
 					if(realDistanceFromCameraStartZ > 128)
 					{
-						int distanceFromCameraStartY = (cluster.tileStartY - cameraPositionTileY) + 25;
+						int distanceFromCameraStartY = (cluster.tileStartY - cameraPositionTileY) + TILE_DRAW_DISTANCE;
 						if(distanceFromCameraStartY < 0)
 							distanceFromCameraStartY = 0;
-						int distanceFromCameraEndY = (cluster.tileEndY - cameraPositionTileY) + 25;
+						int distanceFromCameraEndY = (cluster.tileEndY - cameraPositionTileY) + TILE_DRAW_DISTANCE;
 						if(distanceFromCameraEndY > 50)
 							distanceFromCameraEndY = 50;
 						if(distanceFromCameraStartY <= distanceFromCameraEndY)
 						{
-							int distanceFromCameraStartX = (cluster.tileStartX - cameraPositionTileX) + 25;
+							int distanceFromCameraStartX = (cluster.tileStartX - cameraPositionTileX) + TILE_DRAW_DISTANCE;
 							if(distanceFromCameraStartX < 0)
 								distanceFromCameraStartX = 0;
-							int distanceFromCameraEndX = (cluster.tileEndX - cameraPositionTileX) + 25;
+							int distanceFromCameraEndX = (cluster.tileEndX - cameraPositionTileX) + TILE_DRAW_DISTANCE;
 							if(distanceFromCameraEndX > 50)
 								distanceFromCameraEndX = 50;
 							bool visible = false;
@@ -1532,16 +1539,16 @@ namespace Rs317.Sharp
 				cameraPositionTileX = cameraPosX / 128;
 				cameraPositionTileY = cameraPosY / 128;
 				WorldController.plane = plane;
-				currentPositionX = cameraPositionTileX - 25;
+				currentPositionX = cameraPositionTileX - TILE_DRAW_DISTANCE;
 				if(currentPositionX < 0)
 					currentPositionX = 0;
-				currentPositionY = cameraPositionTileY - 25;
+				currentPositionY = cameraPositionTileY - TILE_DRAW_DISTANCE;
 				if(currentPositionY < 0)
 					currentPositionY = 0;
-				mapBoundsX = cameraPositionTileX + 25;
+				mapBoundsX = cameraPositionTileX + TILE_DRAW_DISTANCE;
 				if(mapBoundsX > mapSizeX)
 					mapBoundsX = mapSizeX;
-				mapBoundsY = cameraPositionTileY + 25;
+				mapBoundsY = cameraPositionTileY + TILE_DRAW_DISTANCE;
 				if(mapBoundsY > mapSizeY)
 					mapBoundsY = mapSizeY;
 				processCulling();
@@ -1556,7 +1563,7 @@ namespace Rs317.Sharp
 							Tile tile = tiles[x][y];
 							if(tile != null)
 								if(tile.logicHeight > plane
-									|| !TILE_VISIBILITY_MAP[(x - cameraPositionTileX) + 25][(y - cameraPositionTileY) + 25]
+									|| !TILE_VISIBILITY_MAP[(x - cameraPositionTileX) + TILE_DRAW_DISTANCE][(y - cameraPositionTileY) + TILE_DRAW_DISTANCE]
 									&& heightMap[z][x][y] - cameraPosZ < 2000)
 								{
 									tile.abool1322 = false;
@@ -1579,13 +1586,13 @@ namespace Rs317.Sharp
 				for(int z = currentPositionZ; z < mapSizeZ; z++)
 				{
 					Tile[][] tiles = groundArray[z];
-					for(int offsetX = -25; offsetX <= 0; offsetX++)
+					for(int offsetX = -TILE_DRAW_DISTANCE; offsetX <= 0; offsetX++)
 					{
 						int x = cameraPositionTileX + offsetX;
 						int x2 = cameraPositionTileX - offsetX;
 						if(x >= currentPositionX || x2 < mapBoundsX)
 						{
-							for(int offsetY = -25; offsetY <= 0; offsetY++)
+							for(int offsetY = -TILE_DRAW_DISTANCE; offsetY <= 0; offsetY++)
 							{
 								int y = cameraPositionTileY + offsetY;
 								int y2 = cameraPositionTileY - offsetY;
@@ -1638,13 +1645,13 @@ namespace Rs317.Sharp
 				for(int z = currentPositionZ; z < mapSizeZ; z++)
 				{
 					Tile[][] tiles = groundArray[z];
-					for(int offsetX = -25; offsetX <= 0; offsetX++)
+					for(int offsetX = -TILE_DRAW_DISTANCE; offsetX <= 0; offsetX++)
 					{
 						int x = cameraPositionTileX + offsetX;
 						int x2 = cameraPositionTileX - offsetX;
 						if(x >= currentPositionX || x2 < mapBoundsX)
 						{
-							for(int offsetY = -25; offsetY <= 0; offsetY++)
+							for(int offsetY = -TILE_DRAW_DISTANCE; offsetY <= 0; offsetY++)
 							{
 								int y = cameraPositionTileY + offsetY;
 								int y2 = cameraPositionTileY - offsetY;
