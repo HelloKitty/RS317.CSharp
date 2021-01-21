@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,6 +79,8 @@ namespace Rs317.Sharp
 		/// </summary>
 		public bool IsOnGameEngineThread => GameEngineThreadId == Thread.CurrentThread.ManagedThreadId;
 
+		private object InputSyncObj { get; } = new object();
+
 		protected RSApplet(IRunnableStarter runnableStarterStrategy)
 		{
 			RunnableStarterStrategy = runnableStarterStrategy ?? throw new ArgumentNullException(nameof(runnableStarterStrategy));
@@ -91,6 +96,7 @@ namespace Rs317.Sharp
 
 		protected virtual void cleanUpForQuit()
 		{
+			
 		}
 
 		public virtual void createClientFrame(int width, int height)
@@ -108,29 +114,35 @@ namespace Rs317.Sharp
 
 		public void mousePressed(object sender, RsMouseInputEventArgs e)
 		{
-			int i = e.ScreenCoordX;
-			int j = e.ScreenCoordY;
+			lock (InputSyncObj)
+			{
+				int i = e.ScreenCoordX;
+				int j = e.ScreenCoordY;
 
-			idleTime = 0;
-			eventClickX = i;
-			eventClickY = j;
-			eventClickTime = TimeService.CurrentTimeInMilliseconds();
-			if (e.IsRightClick)
-			{
-				eventMouseButton = 2;
-				mouseButton = 2;
-			}
-			else
-			{
-				eventMouseButton = 1;
-				mouseButton = 1;
+				idleTime = 0;
+				eventClickX = i;
+				eventClickY = j;
+				eventClickTime = TimeService.CurrentTimeInMilliseconds();
+				if(e.IsRightClick)
+				{
+					eventMouseButton = 2;
+					mouseButton = 2;
+				}
+				else
+				{
+					eventMouseButton = 1;
+					mouseButton = 1;
+				}
 			}
 		}
 
 		public void mouseReleased(object sender, RsMouseInputEventArgs e)
 		{
-			idleTime = 0;
-			mouseButton = 0;
+			lock (InputSyncObj)
+			{
+				idleTime = 0;
+				mouseButton = 0;
+			}
 		}
 
 		public void mouseEntered(object sender, EventArgs e)
@@ -139,32 +151,44 @@ namespace Rs317.Sharp
 
 		public void mouseExited(object sender, EventArgs e)
 		{
-			idleTime = 0;
-			mouseX = -1;
-			mouseY = -1;
+			lock (InputSyncObj)
+			{
+				idleTime = 0;
+				mouseX = -1;
+				mouseY = -1;
+			}
 		}
 
 		public void mouseDragged(object sender, RsMousePositionChangeEventArgs e)
 		{
-			int i = e.ScreenCoordX;
-			int j = e.ScreenCoordY;
+			lock (InputSyncObj)
+			{
+				int i = e.ScreenCoordX;
+				int j = e.ScreenCoordY;
 
-			idleTime = 0;
-			mouseX = i;
-			mouseY = j;
+				idleTime = 0;
+				mouseX = i;
+				mouseY = j;
+			}
 		}
 
 		public void mouseWheelDragged(object sender, RsMousePositionChangeEventArgs e)
 		{
-			int mouseXDiff = mouseX - e.ScreenCoordX;
-			int mouseYDiff = mouseY - e.ScreenCoordY;
+			lock (InputSyncObj)
+			{
+				int mouseXDiff = mouseX - e.ScreenCoordX;
+				int mouseYDiff = mouseY - e.ScreenCoordY;
 
-			OnMouseWheelDragged(mouseXDiff, mouseYDiff);
+				OnMouseWheelDragged(mouseXDiff, mouseYDiff);
+			}
 		}
 
 		public void mouseWheelScroll(object sender, float scrollDelta)
 		{
-			OnMouseWheelScrolled(scrollDelta);
+			lock (InputSyncObj)
+			{
+				OnMouseWheelScrolled(scrollDelta);
+			}
 		}
 
 		protected abstract void OnMouseWheelDragged(int mouseXDiff, int mouseYDiff);
@@ -173,12 +197,15 @@ namespace Rs317.Sharp
 
 		public void mouseMoved(object sender, RsMousePositionChangeEventArgs e)
 		{
-			int i = e.ScreenCoordX;
-			int j = e.ScreenCoordY;
+			lock (InputSyncObj)
+			{
+				int i = e.ScreenCoordX;
+				int j = e.ScreenCoordY;
 
-			idleTime = 0;
-			mouseX = i;
-			mouseY = j;
+				idleTime = 0;
+				mouseX = i;
+				mouseY = j;
+			}
 		}
 
 		protected virtual void drawLoadingText(int percentage, String s)
@@ -418,11 +445,17 @@ namespace Rs317.Sharp
 
 					for (; count < 256; count += ratio)
 					{
-						clickType = eventMouseButton;
-						clickX = eventClickX;
-						clickY = eventClickY;
-						clickTime = eventClickTime;
-						eventMouseButton = 0;
+						//Important to sync input copy otherwise we
+						//have a race condition in multi-threaded input
+						lock (InputSyncObj)
+						{
+							clickType = eventMouseButton;
+							clickX = eventClickX;
+							clickY = eventClickY;
+							clickTime = eventClickTime;
+							eventMouseButton = 0;
+						}
+
 						await processGameLoop();
 						readIndex = writeIndex;
 					}
