@@ -127,5 +127,15 @@ namespace Rs317.Sharp
 				return new RsUnityClient(configuration, GraphicsObject, runnableStarter, new DefaultRsSocketFactory(runnableStarter));
 			}
 		}
+
+		public void LateUpdate()
+		{
+			//Idea here is we base aspect ratio correction off of height. So if the expected width is not correct then
+			//we set resolution to that value.
+			int expectedWidth = (int) (ScreenConstants.DEFAULT_SCREEN_ASPECT_RATIO * Screen.height);
+
+			if (expectedWidth != Screen.width)
+				Screen.SetResolution(expectedWidth, Screen.height, Screen.fullScreenMode);
+		}
 	}
 }
