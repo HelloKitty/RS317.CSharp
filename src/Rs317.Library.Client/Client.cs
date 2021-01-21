@@ -268,7 +268,7 @@ namespace Rs317.Sharp
 		private static int[] EXPERIENCE_TABLE;
 		private int minimapState;
 		private int sameClickPositionCounter;
-		private int loadingStage;
+		private RegionLoadingStage loadingStage;
 		protected IndexedImage scrollBarUp;
 		protected IndexedImage scrollBarDown;
 		private int anInt1026;
@@ -4397,14 +4397,14 @@ namespace Rs317.Sharp
 				redrawChatbox = true;
 				drawTabIcons = true;
 				updateChatSettings = true;
-				if(loadingStage != 2)
+				if(loadingStage != RegionLoadingStage.LoadingComplete)
 				{
 					gameScreenImageProducer.drawGraphics(4, base.gameGraphics, 4);
 					minimapImageProducer.drawGraphics(4, base.gameGraphics, 550);
 				}
 			}
 
-			if(loadingStage == 2)
+			if(loadingStage == RegionLoadingStage.LoadingComplete)
 				renderGameView();
 			if(menuOpen && menuScreenArea == 1)
 				redrawTab = true;
@@ -4464,7 +4464,7 @@ namespace Rs317.Sharp
 				redrawChatbox = false;
 			}
 
-			if(loadingStage == 2)
+			if(loadingStage == RegionLoadingStage.LoadingComplete)
 			{
 				drawMinimap();
 				minimapImageProducer.drawGraphics(4, base.gameGraphics, 550);
@@ -7087,8 +7087,6 @@ namespace Rs317.Sharp
 		{
 			if(packetOpcode == 73 || packetOpcode == 241)
 			{
-
-				;
 				int playerRegionX = regionX;
 				int playerRegionY = regionY;
 				if(packetOpcode == 73)
@@ -7123,7 +7121,7 @@ namespace Rs317.Sharp
 					loadGeneratedMap = true;
 				}
 
-				if(regionX == playerRegionX && regionY == playerRegionY && loadingStage == 2)
+				if(regionX == playerRegionX && regionY == playerRegionY && loadingStage == RegionLoadingStage.LoadingComplete)
 				{
 					packetOpcode = -1;
 					return true;
@@ -7136,7 +7134,7 @@ namespace Rs317.Sharp
 				inTutorialIsland = (regionX / 8 == 48 || regionX / 8 == 49) && regionY / 8 == 48;
 				if(regionX / 8 == 48 && regionY / 8 == 148)
 					inTutorialIsland = true;
-				loadingStage = 1;
+				loadingStage = RegionLoadingStage.LoadingRegion;
 				loadRegionTime = TimeService.CurrentTimeInMilliseconds();
 				gameScreenImageProducer.initDrawingArea();
 				fontPlain.drawCentredText("Loading - please wait.", 257, 151, 0);
@@ -7339,7 +7337,7 @@ namespace Rs317.Sharp
 			Console.WriteLine($"Region: {playerRegionX}:{playerRegionY}");
 			loadGeneratedMap = false;
 
-			if (regionX == playerRegionX && regionY == playerRegionY && loadingStage == 2)
+			if (regionX == playerRegionX && regionY == playerRegionY && loadingStage == RegionLoadingStage.LoadingComplete)
 				return;
 
 			regionX = playerRegionX;
@@ -7349,7 +7347,7 @@ namespace Rs317.Sharp
 			inTutorialIsland = (regionX / 8 == 48 || regionX / 8 == 49) && regionY / 8 == 48;
 			if (regionX / 8 == 48 && regionY / 8 == 148)
 				inTutorialIsland = true;
-			loadingStage = 1;
+			loadingStage = RegionLoadingStage.LoadingRegion;
 			loadRegionTime = TimeService.CurrentTimeInMilliseconds();
 			gameScreenImageProducer.initDrawingArea();
 			fontPlain.drawCentredText("Loading - please wait.", 257, 151, 0);
@@ -8010,7 +8008,7 @@ namespace Rs317.Sharp
 			}
 			else
 			{
-				loadingStage = 2;
+				loadingStage = RegionLoadingStage.LoadingComplete;
 				Rs317.Sharp.Region.plane = plane;
 				loadRegion();
 				stream.putOpcode(121);
@@ -8073,17 +8071,17 @@ namespace Rs317.Sharp
 
 		private void loadingStages()
 		{
-			if(lowMemory && loadingStage == 2 && Rs317.Sharp.Region.plane != plane)
+			if(lowMemory && loadingStage == RegionLoadingStage.LoadingComplete && Rs317.Sharp.Region.plane != plane)
 			{
 				gameScreenImageProducer.initDrawingArea();
 				fontPlain.drawCentredText("Loading - please wait.", 257, 151, 0);
 				fontPlain.drawCentredText("Loading - please wait.", 256, 150, 0xFFFFFF);
 				gameScreenImageProducer.drawGraphics(4, base.gameGraphics, 4);
-				loadingStage = 1;
+				loadingStage = RegionLoadingStage.LoadingRegion;
 				loadRegionTime = TimeService.CurrentTimeInMilliseconds();
 			}
 
-			if(loadingStage == 1)
+			if(loadingStage == RegionLoadingStage.LoadingRegion)
 			{
 				int successful = initialiseRegionLoading();
 				if(successful != 0 && TimeService.CurrentTimeInMilliseconds() - loadRegionTime > 360000L)
@@ -8095,7 +8093,7 @@ namespace Rs317.Sharp
 				}
 			}
 
-			if(loadingStage == 2 && plane != lastRegionId)
+			if(loadingStage == RegionLoadingStage.LoadingComplete && plane != lastRegionId)
 			{
 				lastRegionId = plane;
 				renderMinimap(plane);
@@ -8190,7 +8188,6 @@ namespace Rs317.Sharp
 							if(displayMap == -1)
 								objectManager.initiateVertexHeights(y * 8, 8, 8, x * 8);
 						}
-
 					}
 
 					stream.putOpcode(0);
@@ -8792,7 +8789,7 @@ namespace Rs317.Sharp
 
 			itemSelected = false;
 			spellSelected = false;
-			loadingStage = 0;
+			loadingStage = RegionLoadingStage.Default;
 			trackCount = 0;
 			cameraRandomisationH = (int) (StaticRandomGenerator.Next(100)) - 50;
 			cameraRandomisationV = (int) (StaticRandomGenerator.Next(110)) - 55;
@@ -9145,6 +9142,7 @@ namespace Rs317.Sharp
 				}
 			}
 
+			// HelloKitty: Custom hack here to prevent walking during loading screen
 			if(WorldController.clickedTileX != -1)
 			{
 				int x = WorldController.clickedTileX;
@@ -9174,9 +9172,9 @@ namespace Rs317.Sharp
 			processChatModeClick();
 			if(base.mouseButton == 1 || base.clickType == 1)
 				anInt1213++;
-			if(loadingStage == 2)
+			if(loadingStage == RegionLoadingStage.LoadingComplete)
 				setStandardCameraPosition();
-			if(loadingStage == 2 && cutsceneActive)
+			if(loadingStage == RegionLoadingStage.LoadingComplete && cutsceneActive)
 				setCutsceneCamera();
 			for(int camera = 0; camera < 5; camera++)
 				unknownCameraVariable[camera]++;
@@ -10794,7 +10792,7 @@ namespace Rs317.Sharp
 						Animation.method529(onDemandData.buffer);
 					if(onDemandData.dataType == 2 && onDemandData.id == nextSong && onDemandData.buffer != null)
 						saveMidi(songChanging, onDemandData.buffer);
-					if(onDemandData.dataType == 3 && loadingStage == 1)
+					if(onDemandData.dataType == 3 && loadingStage == RegionLoadingStage.LoadingRegion)
 					{
 						for(int r = 0; r < terrainData.Length; r++)
 						{
@@ -12228,7 +12226,7 @@ namespace Rs317.Sharp
 
 		private void spawnGameObjects()
 		{
-			if(loadingStage == 2)
+			if(loadingStage == RegionLoadingStage.LoadingComplete)
 			{
 				for(GameObjectSpawnRequest spawnRequest = (GameObjectSpawnRequest)spawnObjectList
 						.peekFront();
