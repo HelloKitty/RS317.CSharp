@@ -19,10 +19,10 @@ namespace Rs317.Sharp
 
 			//https://stackoverflow.com/questions/4926676/mono-https-webrequest-fails-with-the-authentication-or-decryption-has-failed
 			ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
-			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
 			ServicePointManager.CheckCertificateRevocationList = false;
 
-			X509Certificate2 cert = new X509Certificate2(File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Certs", "ScapeVRMMOOrgTLSCert.pfx")), "test");
+			X509Certificate2 cert = new X509Certificate2(File.ReadAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "Certs", "scape.vrmmo.org.pfx")), "test");
 
 			if(!cert.HasPrivateKey)
 				throw new InvalidOperationException($"Cannot use websocket TLS cert without private key.");
@@ -32,15 +32,18 @@ namespace Rs317.Sharp
 			ConcurrentDictionary<Guid, TcpClient> TcpClientDictionary = new ConcurrentDictionary<Guid, TcpClient>();
 			server.ListenerSocket.NoDelay = true;
 			server.Certificate = cert;
-			server.EnabledSslProtocols = SslProtocols.Tls12;
+			server.EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
 			server.Start(socket =>
 			{
-				socket.OnOpen = () =>
+				socket.OnOpen = async () =>
 				{
 					Console.WriteLine($"Open! Id: {socket.ConnectionInfo.Id}");
 					TcpClient tcpClient = new TcpClient();
 					TcpClientDictionary.TryAdd(socket.ConnectionInfo.Id, tcpClient);
-					Task.Factory.StartNew(async () => { await OnConnectionOpenAsync(tcpClient, mainPort, TcpClientDictionary, socket); });
+					Task.Factory.StartNew(async () =>
+					{
+						await OnConnectionOpenAsync(tcpClient, mainPort, TcpClientDictionary, socket);
+					});
 				};
 
 				socket.OnError = e =>
@@ -51,7 +54,7 @@ namespace Rs317.Sharp
 
 				socket.OnClose = () => { OnConnectionClose(TcpClientDictionary, socket); };
 
-				socket.OnBinary = (byte[] bytes) => { OnBinaryMessage(bytes, TcpClientDictionary, socket); };
+				socket.OnBinary = async (byte[] bytes) => { await OnBinaryMessage(bytes, TcpClientDictionary, socket); };
 			});
 
 			if(!server.IsSecure)
@@ -61,11 +64,19 @@ namespace Rs317.Sharp
 				await Task.Delay(10000);
 		}
 
-		private static void OnBinaryMessage(byte[] bytes, ConcurrentDictionary<Guid, TcpClient> TcpClientDictionary, IWebSocketConnection socket)
+		private static async Task OnBinaryMessage(byte[] bytes, ConcurrentDictionary<Guid, TcpClient> TcpClientDictionary, IWebSocketConnection socket)
 		{
 			Console.WriteLine($"Client Sent Bytes: {bytes.Length}");
 
-			TcpClientDictionary[socket.ConnectionInfo.Id].GetStream().Write(bytes);
+			TcpClient client = TcpClientDictionary[socket.ConnectionInfo.Id];
+			int waitCount = 0;
+			while (!client.Connected && waitCount < 20)
+			{
+				await Task.Delay(150);
+				waitCount++;
+			}
+
+			await client.GetStream().WriteAsync(bytes);
 		}
 
 		private static void OnConnectionClose(ConcurrentDictionary<Guid, TcpClient> TcpClientDictionary, IWebSocketConnection socket)
@@ -80,9 +91,10 @@ namespace Rs317.Sharp
 		{
 			try
 			{
+				//await tcpClient.ConnectAsync("72.190.177.214", 5006);
 				await tcpClient.ConnectAsync("127.0.0.1", mainPort);
 
-				if (!tcpClient.Connected)
+				if(!tcpClient.Connected)
 					throw new InvalidOperationException($"Failed to connect to RS server.");
 
 				NetworkStream stream = tcpClient.GetStream();
