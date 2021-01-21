@@ -66,6 +66,16 @@ namespace Rs317.Sharp
 
 		protected IRunnableStarter RunnableStarterStrategy { get; }
 
+		/// <summary>
+		/// Indicates the thread id of the main engine thread.
+		/// </summary>
+		public int GameEngineThreadId { get; private set; }
+
+		/// <summary>
+		/// Indicates if the caller is on the main game thread.
+		/// </summary>
+		public bool IsOnGameEngineThread => GameEngineThreadId == Thread.CurrentThread.ManagedThreadId;
+
 		protected RSApplet(IRunnableStarter runnableStarterStrategy)
 		{
 			RunnableStarterStrategy = runnableStarterStrategy ?? throw new ArgumentNullException(nameof(runnableStarterStrategy));
@@ -339,6 +349,7 @@ namespace Rs317.Sharp
 		{
 			try
 			{
+				GameEngineThreadId = Thread.CurrentThread.ManagedThreadId;
 				Console.WriteLine($"Loading.");
 				drawLoadingText(0, "Loading...");
 				startUp();
