@@ -8,6 +8,11 @@ namespace Rs317.Sharp
 {
 	public sealed class Default317Buffer : IBufferReadable, IBufferWriteable, IBuffer
 	{
+		/// <summary>
+		/// Constant value that indicates if encryption is enabled.
+		/// </summary>
+		public const bool ENABLE_ENCRYPTION = false;
+
 		//Luna-rs default RSA inputs.
 		public static BigInteger? publicKey = BigInteger.Parse("1");
 		public static BigInteger? modulus = BigInteger.Parse("94306533927366675756465748344550949689550982334568289470527341681445613288505954291473168510012417401156971344988779343797488043615702971738296505168869556915772193568338164756326915583511871429998053169912492097791139829802309908513249248934714848531624001166946082342750924060600795950241816621880914628143");
@@ -54,7 +59,7 @@ namespace Rs317.Sharp
 
 			//MoparIsTheBest hackily only does RSA if input is defined
 			//So we will do that too, for devs who want to enable RSA
-			if (publicKey != null && modulus != null)
+			if (ENABLE_ENCRYPTION && publicKey != null && modulus != null)
 				val1 = BigInteger.ModPow(val1, publicKey.Value, modulus.Value);
 
 			byte[] finalBuf = val1.ToByteArray();
