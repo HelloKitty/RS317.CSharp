@@ -336,6 +336,7 @@ namespace Rs317.Sharp
 		private int[] menuActionId;
 		private int[] menuActionData1;
 		protected Sprite[] headIcons;
+		protected Sprite[] skullIcons;
 		private int anInt1098;
 		private int anInt1099;
 		private int anInt1100;
@@ -661,6 +662,7 @@ namespace Rs317.Sharp
 			menuActionId = new int[500];
 			menuActionData1 = new int[500];
 			headIcons = new Sprite[20];
+			skullIcons = new Sprite[20];
 			drawTabIcons = false;
 			chatboxInputNeededString = "";
 			playerActionText = new String[5];
@@ -2112,6 +2114,7 @@ namespace Rs317.Sharp
 			minimapCompassImage = null;
 			hitMarkImage = null;
 			headIcons = null;
+			skullIcons = null;
 			crosses = null;
 			mapDotItem = null;
 			mapDotNPC = null;
@@ -12729,9 +12732,14 @@ namespace Rs317.Sharp
 
 			try
 			{
-				for (int i = 0; i < 20; i++)
+				for (int i = 0; i < 8; i++)
 				{
-					headIcons[i] = new Sprite(archiveMedia, "headicons", i, metadataBuffer);
+					headIcons[i] = new Sprite(archiveMedia, "headicons_prayer", i, metadataBuffer);
+				}
+
+				for (int i = 0; i < 3; i++)
+				{
+					skullIcons[i] = new Sprite(archiveMedia, "headicons_pk", i, metadataBuffer);
 				}
 			}
 			catch (Exception _ex)
@@ -12860,15 +12868,19 @@ namespace Rs317.Sharp
 						if(player.headIcon != 0)
 						{
 							calculateEntityScreenPosition(((target)), target.height + 15);
-							if(spriteDrawX > -1)
+							if (spriteDrawX > -1)
 							{
-								for(int icon = 0; icon < 8; icon++)
-									if((player.headIcon & 1 << icon) != 0)
-									{
-										headIcons[icon].drawImage(spriteDrawX - 12, spriteDrawY - height);
-										height -= 25;
-									}
+								if (player.skullIcon < 2)
+								{
+									skullIcons[player.skullIcon].drawImage(spriteDrawX - 12, spriteDrawY - height);
+									height += 25;
+								}
 
+								if (player.headIcon < 7)
+								{
+									headIcons[player.headIcon].drawImage(spriteDrawX - 12, spriteDrawY - height);
+									height -= 25;
+								}
 							}
 						}
 
