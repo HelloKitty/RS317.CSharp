@@ -22,6 +22,7 @@ namespace Rs317.Sharp
 		public static Cache mruNodes = new Cache(260);
 		public int combatLevel;
 		public int headIcon;
+		public int skullIcon;
 		public int modifiedAppearanceStartTime;
 		public int modifiedAppearanceEndTime { get; set; }
 		public int drawHeight2 { get; set; }
@@ -322,6 +323,8 @@ namespace Rs317.Sharp
 			stream.position = 0;
 			gender = stream.getUnsignedByte();
 			headIcon = stream.getUnsignedByte();
+			skullIcon = stream.getUnsignedByte();
+
 			npcAppearance = null;
 			this.team = 0;
 			for (int slot = 0; slot < 12; slot++)
